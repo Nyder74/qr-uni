@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Registro de Asistencia con QR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  #qr { margin: 20px 0; }
+  button { padding: 10px 15px; font-size: 16px; margin-top: 10px; cursor: pointer; }
+  table { margin-top: 20px; border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+</style>
+</head>
+
+<body>
+
+<h2>Generador de QR + Registro de Asistencia</h2>
+
+<!-- Generación del QR -->
+<div id="qr"></div>
+
+<button onclick="registrarAsistencia()">Registrar asistencia</button>
+<button onclick="exportarExcel()">Exportar Excel</button>
+
+<h3>Asistencias registradas:</h3>
+<table id="tablaAsistencia">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Fecha</th>
+      <th>Hora</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+// 1. Generar QR con URL actual + ?nombre=JEFFERI
+let urlQR = window.location.href.split("?")[0] + "?nombre=JEFFERI";
+new QRCode(document.getElementById("qr"), { text: urlQR, width: 200, height: 200 });
+
+// 2. Detectar el nombre desde el QR
+function obtenerParametro(nombre) {
+  let params = new URLSearchParams(window.location.search);
+  return params.get(nombre);
+}
+
+let nombrePersona = obtenerParametro("nombre");
+
+// 3. Registrar asistencia
+function registrarAsistencia() {
+  if (!nombrePersona) {
+    alert("Escanea el QR primero para registrar asistencia.");
+    return;
+  }
+
+  let fecha = new Date().toLocaleDateString();
+  let hora = new Date().toLocaleTimeString();
+
+  // Agregar a la tabla
+  let tabla = document.querySelector("#tablaAsistencia tbody");
+  let fila = document.createElement("tr");
+
+  fila.innerHTML = `
+    <td>${nombrePersona}</td>
+    <td>${fecha}</td>
+    <td>${hora}</td>
+  `;
+
+  tabla.appendChild(fila);
+
+  alert("Asistencia registrada!");
+}
+
+// 4. Exportar Excel
+function exportarExcel() {
+  let tabla = document.getElementById("tablaAsistencia");
+  let wb = XLSX.utils.table_to_book(tabla, {sheet: "Asistencia"});
+  XLSX.writeFile(wb, "asistencia.xlsx");
+}
+
+</script>
+
+</body>
+</html>
